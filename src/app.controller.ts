@@ -1,17 +1,17 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 
-@Controller('api')
+@Controller('/api')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
+  @Get('/')
   getGateway(): string {
     return this.appService.getGateway();
   }
 
   @Get('auth')
-  getAuth(): string {
+  getAuth(): any {
     return this.appService.getAuth();
   }
 
