@@ -9,19 +9,4 @@ export class AppController {
   getGateway(): string {
     return this.appService.getGateway();
   }
-
-  @Get('auth')
-  getAuth(): any {
-    return this.appService.getAuth();
-  }
-
-  @Get('gamebook')
-  getGamebook(): string {
-    return this.appService.getGamebook();
-  }
-
-  @Get('library')
-  getLibrary(): string {
-    return this.appService.getLibrary();
-  }
 }
