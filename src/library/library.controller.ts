@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { LibraryService } from './library.service';
 
-@Controller('api/library')
+@Controller('library')
 export class LibraryController {
   constructor(private service: LibraryService) {}
 

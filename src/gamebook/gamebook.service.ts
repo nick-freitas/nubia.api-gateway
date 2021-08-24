@@ -1,9 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import {
+  CreateGamebookEvent,
+  Gamebook,
+  GamebookEvent,
+  GamebookEventType,
+  Topics,
+  UserCreatedEvent,
+} from '@indigobit/nubia.common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Client, ClientKafka, Transport } from '@nestjs/microservices';
-import { map, Observable } from 'rxjs';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
-export class GamebookService {
+export class GamebookService implements OnModuleInit {
   @Client({
     transport: Transport.KAFKA,
     options: {
@@ -20,18 +28,65 @@ export class GamebookService {
   gamebookClient: ClientKafka;
 
   onModuleInit() {
-    this.gamebookClient.subscribeToResponseOf('gamebook'); // hero.get.reply
+    this.gamebookClient.subscribeToResponseOf(Topics.GAMEBOOKS);
   }
 
-  getGamebook(): Observable<any> {
-    const startTs = Date.now();
-    const topic = 'gamebook';
-    const payload = {};
+  async createGamebook(_gamebook: Gamebook): Promise<Partial<Gamebook>> {
+    const { fullName } = _gamebook;
+    const id = uuid();
+    const createPayload: CreateGamebookEvent = {
+      type: GamebookEventType.CREATE_GAMEBOOK,
+      data: { id },
+    };
 
-    return this.gamebookClient
-      .send<string>(topic, payload)
-      .pipe(
-        map((message: string) => ({ message, duration: Date.now() - startTs })),
-      );
+    console.info(
+      `Sending Event -> ${createPayload.type}`,
+      JSON.stringify(createPayload),
+    );
+    const createdGamebook = await this.gamebookClient
+      .send<UserCreatedEvent['data']>(Topics.GAMEBOOKS, createPayload)
+      .toPromise();
+
+    const createdPayload = {
+      type: GamebookEventType.GAMEBOOK_CREATED,
+      data: createdGamebook,
+    };
+
+    console.info(
+      `Sending Event -> ${createdPayload.type}`,
+      JSON.stringify(createdPayload),
+    );
+    await this.gamebookClient
+      .send<Partial<Gamebook>>(Topics.GAMEBOOKS, createdPayload)
+      .toPromise();
+
+    return createdGamebook;
+  }
+
+  async updateGamebook(
+    id: string,
+    _gamebook: Gamebook,
+  ): Promise<Partial<Gamebook>> {
+    const updatePayload: GamebookEvent = {
+      type: GamebookEventType.UPDATE_GAMEBOOK,
+      data: _gamebook,
+    };
+
+    console.info(`Sending Event -> ${updatePayload.type}`);
+    const updatedGamebook = await this.gamebookClient
+      .send<Partial<Gamebook>>(Topics.GAMEBOOKS, updatePayload)
+      .toPromise();
+
+    const updatedPayload = {
+      type: GamebookEventType.GAMEBOOK_UPDATED,
+      data: updatedGamebook,
+    };
+
+    console.info(`Sending Event -> ${updatedPayload.type}`);
+    await this.gamebookClient
+      .send<Partial<Gamebook>>(Topics.GAMEBOOKS, updatedPayload)
+      .toPromise();
+
+    return updatedGamebook;
   }
 }

@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Topics } from '@indigobit/nubia.common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Client, ClientKafka, Transport } from '@nestjs/microservices';
 import { map, Observable } from 'rxjs';
 
 @Injectable()
-export class LibraryService {
+export class LibraryService implements OnModuleInit {
   @Client({
     transport: Transport.KAFKA,
     options: {
@@ -20,16 +21,15 @@ export class LibraryService {
   libraryClient: ClientKafka;
 
   onModuleInit() {
-    this.libraryClient.subscribeToResponseOf('library'); // hero.get.reply
+    this.libraryClient.subscribeToResponseOf(Topics.GAMEBOOKS);
   }
 
   getLibrary(): Observable<any> {
     const startTs = Date.now();
-    const topic = 'library';
     const payload = {};
 
     return this.libraryClient
-      .send<string>(topic, payload)
+      .send<string>(Topics.GAMEBOOKS, payload)
       .pipe(
         map((message: string) => ({ message, duration: Date.now() - startTs })),
       );
