@@ -14,31 +14,28 @@ export class GamebookController {
   constructor(private service: GamebookService) {}
 
   @Post('')
-  createGamebook(@Body() gamebook: Gamebook): Promise<Partial<Gamebook>> {
+  createGamebook(@Body() gamebook: Gamebook): Promise<Gamebook> {
     if (!gamebook.title) throw new BadRequestException('Missing Title');
-    return this.service.createGamebook(gamebook);
+    const { title, description, imageSrc, price } = gamebook;
+    return this.service.createGamebook(title, description, imageSrc, price);
   }
 
   @Get(':gamebookId')
-  getById(@Param('gamebookId') gamebookId: string): Promise<Partial<Gamebook>> {
+  getById(@Param('gamebookId') gamebookId: string): Promise<Gamebook> {
     if (!gamebookId) throw new BadRequestException('Missing GamebookId');
 
-    return this.service.getById(gamebookId);
+    return this.service.getGamebookById(gamebookId);
   }
 
   @Post(':gamebookId/reset-choices')
-  resetChoices(
-    @Param('gamebookId') gamebookId: string,
-  ): Promise<Partial<Gamebook>> {
+  resetChoices(@Param('gamebookId') gamebookId: string): Promise<Gamebook> {
     if (!gamebookId) throw new BadRequestException('Missing GamebookId');
 
     return this.service.resetChoices(gamebookId);
   }
 
   @Post(':gamebookId/undo-choice')
-  undoChoice(
-    @Param('gamebookId') gamebookId: string,
-  ): Promise<Partial<Gamebook>> {
+  undoChoice(@Param('gamebookId') gamebookId: string): Promise<Gamebook> {
     if (!gamebookId) throw new BadRequestException('Missing GamebookId');
 
     return this.service.undoChoice(gamebookId);
@@ -48,7 +45,7 @@ export class GamebookController {
   makeChoice(
     @Param('gamebookId') gamebookId: string,
     @Param('progressionId') progressionId: string,
-  ): Promise<Partial<Gamebook>> {
+  ): Promise<Gamebook> {
     if (!gamebookId) throw new BadRequestException('Missing GamebookId');
     if (!progressionId) throw new BadRequestException('Missing ProgressionId');
 

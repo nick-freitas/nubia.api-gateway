@@ -2,10 +2,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Client, ClientKafka, Transport } from '@nestjs/microservices';
 import {
+  CreateUserEvent,
   Topics,
+  UpdateUserEvent,
   User,
-  UserEvent,
+  UserCreatedEvent,
   UserEventType,
+  UserUpdatedEvent,
 } from '@indigobit/nubia.common';
 
 @Injectable()
@@ -33,15 +36,14 @@ export class AuthService implements OnModuleInit {
     email: string,
     password: string,
     fullName: string,
-  ): Promise<Partial<User>> {
-    const createPayload: UserEvent = {
+  ): Promise<User> {
+    const createPayload: CreateUserEvent = {
       type: UserEventType.CREATE_USER,
       data: {
         email,
         password,
         fullName,
         id: uuidv4(),
-        version: 1,
       },
     };
 
@@ -50,12 +52,17 @@ export class AuthService implements OnModuleInit {
       JSON.stringify(createPayload),
     );
     const user = await this.authClient
-      .send<Partial<User>>(Topics.USERS, createPayload)
+      .send<User, CreateUserEvent>(Topics.USERS, createPayload)
       .toPromise();
 
-    const createdPayload = {
+    const createdPayload: UserCreatedEvent = {
       type: UserEventType.USER_CREATED,
-      data: user,
+      data: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        version: user.version,
+      },
     };
 
     console.info(
@@ -63,35 +70,38 @@ export class AuthService implements OnModuleInit {
       JSON.stringify(createdPayload),
     );
     await this.authClient
-      .send<Partial<User>>(Topics.USERS, createdPayload)
+      .send<User, UserCreatedEvent>(Topics.USERS, createdPayload)
       .toPromise();
 
     return user;
   }
 
-  async updateUser(id: string, fullName: string): Promise<Partial<User>> {
-    const updatePayload: UserEvent = {
+  async updateUser(id: string, fullName: string): Promise<User> {
+    const updatePayload: UpdateUserEvent = {
       type: UserEventType.UPDATE_USER,
       data: {
         id,
         fullName,
-        version: 0,
       },
     };
 
     console.info(`Sending Event -> ${updatePayload.type}`);
     const user = await this.authClient
-      .send<Partial<User>>(Topics.USERS, updatePayload)
+      .send<User, UpdateUserEvent>(Topics.USERS, updatePayload)
       .toPromise();
 
-    const updatedPayload = {
+    const updatedPayload: UserUpdatedEvent = {
       type: UserEventType.USER_UPDATED,
-      data: user,
+      data: {
+        id: id,
+        fullName: fullName,
+        version: user.version,
+      },
     };
 
     console.info(`Sending Event -> ${updatedPayload.type}`);
     await this.authClient
-      .send<Partial<User>>(Topics.USERS, updatedPayload)
+      .send<User, UserUpdatedEvent>(Topics.USERS, updatedPayload)
       .toPromise();
 
     return user;

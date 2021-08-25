@@ -1,7 +1,11 @@
-import { Topics } from '@indigobit/nubia.common';
+import {
+  Gamebook,
+  GetUserLibraryEvent,
+  LibraryEventType,
+  Topics,
+} from '@indigobit/nubia.common';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Client, ClientKafka, Transport } from '@nestjs/microservices';
-import { map, Observable } from 'rxjs';
 
 @Injectable()
 export class LibraryService implements OnModuleInit {
@@ -24,14 +28,17 @@ export class LibraryService implements OnModuleInit {
     this.libraryClient.subscribeToResponseOf(Topics.GAMEBOOKS);
   }
 
-  getLibrary(): Observable<any> {
-    const startTs = Date.now();
-    const payload = {};
+  getLibrary(userId: string): Promise<Array<Gamebook>> {
+    const getLibraryPayload: GetUserLibraryEvent = {
+      type: LibraryEventType.GET_USER_LIBRARY,
+      data: { userId },
+    };
 
     return this.libraryClient
-      .send<string>(Topics.GAMEBOOKS, payload)
-      .pipe(
-        map((message: string) => ({ message, duration: Date.now() - startTs })),
-      );
+      .send<Array<Gamebook>, GetUserLibraryEvent>(
+        Topics.GAMEBOOKS,
+        getLibraryPayload,
+      )
+      .toPromise();
   }
 }

@@ -18,7 +18,7 @@ export class AuthController {
     @Body('email') email: string,
     @Body('password') password: string,
     @Body('fullName') fullName: string,
-  ): Promise<Partial<User>> {
+  ): Promise<User> {
     if (!email) throw new BadRequestException('Missing Email');
     if (!password) throw new BadRequestException('Missing Password');
     if (!fullName) throw new BadRequestException('Missing FullName');
@@ -30,7 +30,7 @@ export class AuthController {
   updateUser(
     @Param('userId') userId: string,
     @Body('fullName') fullName: string,
-  ): Promise<Partial<User>> {
+  ): Promise<User> {
     if (!userId) throw new BadRequestException('Missing Id');
     if (!fullName) throw new BadRequestException('Missing FullName');
 
