@@ -1,13 +1,22 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { GamebookModule } from './gamebook/gamebook.module';
-import { LibraryModule } from './library/library.module';
+
+import { AuthModule } from './services/auth/auth.module';
+import { GamebookModule } from './services/gamebook/gamebook.module';
+import { LibraryModule } from './services/library/library.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [AuthModule, GamebookModule, LibraryModule],
+  imports: [
+    AuthModule,
+    GamebookModule,
+    LibraryModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET_KEY,
+      signOptions: { expiresIn: '5m' },
+    }),
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [],
 })
 export class AppModule {}

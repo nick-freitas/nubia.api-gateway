@@ -2,7 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Client, ClientKafka, Transport } from '@nestjs/microservices';
 import {
+  AuthorizedUser,
   CreateUserEvent,
+  NubiaEvent,
+  SignInUserEvent,
+  SignOutUserEvent,
   Topics,
   UpdateUserEvent,
   User,
@@ -32,11 +36,47 @@ export class AuthService implements OnModuleInit {
     this.authClient.subscribeToResponseOf(Topics.USERS);
   }
 
+  async signOut(auth: NubiaEvent['auth']): Promise<any> {
+    const signOutPayload: SignOutUserEvent = {
+      type: UserEventType.SIGN_OUT_USER,
+      data: {},
+      auth: auth,
+    };
+
+    console.info(
+      `Sending Event -> ${signOutPayload.type}`,
+      JSON.stringify(signOutPayload),
+    );
+    return this.authClient
+      .send<any, SignOutUserEvent>(Topics.USERS, signOutPayload)
+      .toPromise();
+  }
+
+  async signIn(email: string, password: string): Promise<AuthorizedUser> {
+    const signInPayload: SignInUserEvent = {
+      type: UserEventType.SIGN_IN_USER,
+      data: {
+        email,
+        password,
+      },
+    };
+
+    console.info(
+      `Sending Event -> ${signInPayload.type}`,
+      JSON.stringify(signInPayload),
+    );
+    const user = await this.authClient
+      .send<AuthorizedUser, SignInUserEvent>(Topics.USERS, signInPayload)
+      .toPromise();
+
+    return user;
+  }
+
   async createUser(
     email: string,
     password: string,
     fullName: string,
-  ): Promise<User> {
+  ): Promise<AuthorizedUser> {
     const createPayload: CreateUserEvent = {
       type: UserEventType.CREATE_USER,
       data: {
@@ -52,7 +92,7 @@ export class AuthService implements OnModuleInit {
       JSON.stringify(createPayload),
     );
     const user = await this.authClient
-      .send<User, CreateUserEvent>(Topics.USERS, createPayload)
+      .send<AuthorizedUser, CreateUserEvent>(Topics.USERS, createPayload)
       .toPromise();
 
     const createdPayload: UserCreatedEvent = {
@@ -76,13 +116,18 @@ export class AuthService implements OnModuleInit {
     return user;
   }
 
-  async updateUser(id: string, fullName: string): Promise<User> {
+  async updateUser(
+    auth: NubiaEvent['auth'],
+    id: string,
+    fullName: string,
+  ): Promise<User> {
     const updatePayload: UpdateUserEvent = {
       type: UserEventType.UPDATE_USER,
       data: {
         id,
         fullName,
       },
+      auth,
     };
 
     console.info(`Sending Event -> ${updatePayload.type}`);
@@ -97,6 +142,7 @@ export class AuthService implements OnModuleInit {
         fullName: fullName,
         version: user.version,
       },
+      auth,
     };
 
     console.info(`Sending Event -> ${updatedPayload.type}`);

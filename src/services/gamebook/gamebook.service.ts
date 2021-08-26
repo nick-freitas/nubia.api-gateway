@@ -4,13 +4,16 @@ import {
   GamebookCreatedEvent,
   GamebookEventType,
   GamebookUpdatedEvent,
+  NubiaEvent,
   Topics,
   UpdateGamebookEvent,
-  User,
 } from '@indigobit/nubia.common';
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  NotImplementedException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { Client, ClientKafka, Transport } from '@nestjs/microservices';
-import { create } from 'domain';
 import { v4 as uuid } from 'uuid';
 
 @Injectable()
@@ -34,7 +37,34 @@ export class GamebookService implements OnModuleInit {
     this.gamebookClient.subscribeToResponseOf(Topics.GAMEBOOKS);
   }
 
+  async getGamebookById(
+    auth: NubiaEvent['auth'],
+    gamebookId: string,
+  ): Promise<any> {
+    throw new NotImplementedException();
+  }
+
+  async resetChoices(
+    auth: NubiaEvent['auth'],
+    gamebookId: string,
+  ): Promise<any> {
+    throw new NotImplementedException();
+  }
+
+  async undoChoice(auth: NubiaEvent['auth'], gamebookId: string): Promise<any> {
+    throw new NotImplementedException();
+  }
+
+  async makeChoice(
+    auth: NubiaEvent['auth'],
+    gamebookId: string,
+    progressionId: string,
+  ): Promise<any> {
+    throw new NotImplementedException();
+  }
+
   async createGamebook(
+    auth: NubiaEvent['auth'],
     title: string,
     description: string,
     imageSrc: string,
@@ -49,7 +79,9 @@ export class GamebookService implements OnModuleInit {
         description,
         imageSrc,
         price,
+        authorId: auth.userId,
       },
+      auth,
     };
 
     console.info(
@@ -63,6 +95,7 @@ export class GamebookService implements OnModuleInit {
     const createdPayload: GamebookCreatedEvent = {
       type: GamebookEventType.GAMEBOOK_CREATED,
       data: { ...createdGamebook, version: createdGamebook.version },
+      auth,
     };
 
     console.info(
@@ -76,10 +109,14 @@ export class GamebookService implements OnModuleInit {
     return createdGamebook;
   }
 
-  async updateGamebook(gamebook: Gamebook): Promise<Gamebook> {
+  async updateGamebook(
+    auth: NubiaEvent['auth'],
+    gamebook: Gamebook,
+  ): Promise<Gamebook> {
     const updatePayload: UpdateGamebookEvent = {
       type: GamebookEventType.UPDATE_GAMEBOOK,
       data: gamebook,
+      auth,
     };
 
     console.info(`Sending Event -> ${updatePayload.type}`);
@@ -90,6 +127,7 @@ export class GamebookService implements OnModuleInit {
     const updatedPayload: GamebookUpdatedEvent = {
       type: GamebookEventType.GAMEBOOK_UPDATED,
       data: { ...updatedGamebook, version: updatedGamebook.version },
+      auth,
     };
 
     console.info(`Sending Event -> ${updatedPayload.type}`);

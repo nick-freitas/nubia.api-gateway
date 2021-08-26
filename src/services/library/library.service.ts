@@ -2,6 +2,7 @@ import {
   Gamebook,
   GetUserLibraryEvent,
   LibraryEventType,
+  NubiaEvent,
   Topics,
 } from '@indigobit/nubia.common';
 import { Injectable, OnModuleInit } from '@nestjs/common';
@@ -28,10 +29,10 @@ export class LibraryService implements OnModuleInit {
     this.libraryClient.subscribeToResponseOf(Topics.GAMEBOOKS);
   }
 
-  getLibrary(userId: string): Promise<Array<Gamebook>> {
+  getLibrary(auth: NubiaEvent['auth']): Promise<Array<Gamebook>> {
     const getLibraryPayload: GetUserLibraryEvent = {
       type: LibraryEventType.GET_USER_LIBRARY,
-      data: { userId },
+      data: { userId: auth.userId },
     };
 
     return this.libraryClient
