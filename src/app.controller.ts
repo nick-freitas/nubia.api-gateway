@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 
-@Controller('/api')
+@Controller('')
 export class AppController {
-  @Get('/')
+  @Get('')
   getGateway(): string {
     return 'Standard API Gateway response from the gateway itself';
   }

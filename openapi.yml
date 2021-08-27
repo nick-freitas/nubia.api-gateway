@@ -1,0 +1,12 @@
+openapi: '3.0.2'
+info:
+  title: Nubia Gamebooks API Gateway
+  version: '0.1'
+servers:
+  - url: http://nubia.dev/api/
+paths:
+  /:
+    get:
+      responses:
+        '200':
+          description: 'OK'

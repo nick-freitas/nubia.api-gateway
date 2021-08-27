@@ -4,15 +4,16 @@ import {
   GamebookCreatedEvent,
   GamebookEventType,
   GamebookUpdatedEvent,
+  GetGamebookEvent,
+  MakeChoiceEvent,
   NubiaEvent,
+  ReadingSessionEventType,
+  ResetChoicesEvent,
   Topics,
+  UndoChoiceEvent,
   UpdateGamebookEvent,
 } from '@indigobit/nubia.common';
-import {
-  Injectable,
-  NotImplementedException,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Client, ClientKafka, Transport } from '@nestjs/microservices';
 import { v4 as uuid } from 'uuid';
 
@@ -41,18 +42,51 @@ export class GamebookService implements OnModuleInit {
     auth: NubiaEvent['auth'],
     gamebookId: string,
   ): Promise<any> {
-    throw new NotImplementedException();
+    const getGamebookPayload: GetGamebookEvent = {
+      type: GamebookEventType.GET_GAMEBOOK,
+      data: { id: gamebookId },
+      auth,
+    };
+
+    return this.gamebookClient
+      .send<Array<Gamebook>, GetGamebookEvent>(
+        Topics.GAMEBOOKS,
+        getGamebookPayload,
+      )
+      .toPromise();
   }
 
   async resetChoices(
     auth: NubiaEvent['auth'],
     gamebookId: string,
   ): Promise<any> {
-    throw new NotImplementedException();
+    const resetChoicesPaylod: ResetChoicesEvent = {
+      type: ReadingSessionEventType.RESET_CHOICES,
+      data: { gamebookId },
+      auth,
+    };
+
+    return this.gamebookClient
+      .send<Array<Gamebook>, ResetChoicesEvent>(
+        Topics.READING_SESSION,
+        resetChoicesPaylod,
+      )
+      .toPromise();
   }
 
   async undoChoice(auth: NubiaEvent['auth'], gamebookId: string): Promise<any> {
-    throw new NotImplementedException();
+    const undoChoicePaylod: UndoChoiceEvent = {
+      type: ReadingSessionEventType.UNDO_CHOICE,
+      data: { id: gamebookId },
+      auth,
+    };
+
+    return this.gamebookClient
+      .send<Array<Gamebook>, UndoChoiceEvent>(
+        Topics.READING_SESSION,
+        undoChoicePaylod,
+      )
+      .toPromise();
   }
 
   async makeChoice(
@@ -60,7 +94,18 @@ export class GamebookService implements OnModuleInit {
     gamebookId: string,
     progressionId: string,
   ): Promise<any> {
-    throw new NotImplementedException();
+    const makeChoicePaylod: MakeChoiceEvent = {
+      type: ReadingSessionEventType.MAKE_CHOICE,
+      data: { gamebookId, progressionId },
+      auth,
+    };
+
+    return this.gamebookClient
+      .send<Array<Gamebook>, MakeChoiceEvent>(
+        Topics.READING_SESSION,
+        makeChoicePaylod,
+      )
+      .toPromise();
   }
 
   async createGamebook(

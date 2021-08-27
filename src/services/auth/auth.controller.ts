@@ -1,4 +1,4 @@
-import { User, NubiaEvent } from '@indigobit/nubia.common';
+import { User } from '@indigobit/nubia.common';
 import {
   BadRequestException,
   Body,
