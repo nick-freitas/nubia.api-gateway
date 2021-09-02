@@ -19,7 +19,7 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private service: AuthService) {}
 
-  @Post('signin')
+  @Post('login')
   async signIn(
     @Body('email') email: string,
     @Body('password') password: string,
@@ -34,7 +34,7 @@ export class AuthController {
     return { access_token };
   }
 
-  @Post('signup')
+  @Post('register')
   async signUp(
     @Body('email') email: string,
     @Body('password') password: string,
