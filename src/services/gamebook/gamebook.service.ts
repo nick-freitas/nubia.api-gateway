@@ -77,7 +77,7 @@ export class GamebookService implements OnModuleInit {
   async undoChoice(auth: NubiaEvent['auth'], gamebookId: string): Promise<any> {
     const undoChoicePaylod: UndoChoiceEvent = {
       type: ReadingSessionEventType.UNDO_CHOICE,
-      data: { id: gamebookId },
+      data: { gamebookId },
       auth,
     };
 

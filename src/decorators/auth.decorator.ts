@@ -6,13 +6,14 @@ export const Auth = createParamDecorator(
     const request = ctx.switchToHttp().getRequest();
     const { user, cookies } = request;
 
-    const { userId, exp } = user;
+    const { userId, exp, roles } = user;
     const { access_token } = cookies;
 
     const auth: NubiaEvent['auth'] = {
       userId,
       exp,
       access_token,
+      roles: roles,
     };
 
     return data ? auth[data] : auth;

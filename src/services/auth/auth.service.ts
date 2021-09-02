@@ -102,6 +102,7 @@ export class AuthService implements OnModuleInit {
         email: user.email,
         fullName: user.fullName,
         version: user.version,
+        roles: user.roles,
       },
     };
 
@@ -141,6 +142,7 @@ export class AuthService implements OnModuleInit {
         id: id,
         fullName: fullName,
         version: user.version,
+        roles: user.roles,
       },
       auth,
     };
